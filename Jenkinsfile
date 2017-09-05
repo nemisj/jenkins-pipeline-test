@@ -4,7 +4,7 @@ pipeline {
     stage('install') {
       steps {
         git(url: 'ssh://git@altssh.bitbucket.org:443/gripcode/grip-core.git', branch: '${env.BRANCH}')
-        nodejs(nodeJSInstallationName: 'Node 6.9.0')
+        nodejs 'Node 6.9.0'
         sh 'npm prune'
         sh 'npm install'
         sh 'mkdir -p log'
@@ -22,6 +22,11 @@ pipeline {
           }
         }
         
+        catchError() {
+          sh 'npm install'
+        }
+        
+        bitbucketStatusNotify(buildState: '${currentBuild.result == \'FAILURE\' ? \'FAILED\' : \'SUCCESSFUL\'}', buildDescription: 'description', buildKey: 'the-key', buildName: 'name', credentialsId: 'creds-id')
       }
     }
   }
